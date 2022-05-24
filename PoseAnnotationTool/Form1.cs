@@ -336,7 +336,8 @@ namespace PoseAnnotationTool
             string text = imagePath + "\n";
             foreach (var kp in kps)
             {
-                text += "0," + kp.Position.X + "," + kp.Position.Y + "," + kp.Use + "\n";
+                //text += "0," + kp.Position.X + "," + kp.Position.Y + "," + kp.Use + "\n";
+                text += kp.Position.X + "," + kp.Position.Y + "\n";
             }
 
             // save file
@@ -356,14 +357,21 @@ namespace PoseAnnotationTool
             string imgPath = lines[0];
             System.Diagnostics.Debug.Assert(imgPath == imagePath);
 
+            //for (int i = 0; i < kps.Length; i++)
+            //{
+            //    var tokens = lines[i + 1].Split(',');
+            //    string person = tokens[0];
+            //    float x = float.Parse(tokens[1]);
+            //    float y = float.Parse(tokens[2]);
+            //    bool use = bool.Parse(tokens[3]);
+            //    kps[i] = new Joint(x, y, kps[i].ParentIndex, "unknown", use);
+            //}
             for (int i = 0; i < kps.Length; i++)
             {
                 var tokens = lines[i + 1].Split(',');
-                string person = tokens[0];
-                float x = float.Parse(tokens[1]);
-                float y = float.Parse(tokens[2]);
-                bool use = bool.Parse(tokens[3]);
-                kps[i] = new Joint(x, y, kps[i].ParentIndex, "unknown", use);
+                float x = float.Parse(tokens[0]);
+                float y = float.Parse(tokens[1]);
+                kps[i] = new Joint(x, y, kps[i].ParentIndex, "unknown", true);
             }
             SetNames();
         }
@@ -524,4 +532,3 @@ namespace PoseAnnotationTool
         }
     }
 }
- 
