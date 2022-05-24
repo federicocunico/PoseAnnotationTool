@@ -353,9 +353,8 @@ namespace PoseAnnotationTool
                 return;
             }
             var lines = System.IO.File.ReadAllLines(target);
-
-            string imgPath = lines[0];
-            System.Diagnostics.Debug.Assert(imgPath == imagePath);
+            //string imgPath = lines[0];
+            //System.Diagnostics.Debug.Assert(imgPath == imagePath);
 
             //for (int i = 0; i < kps.Length; i++)
             //{
