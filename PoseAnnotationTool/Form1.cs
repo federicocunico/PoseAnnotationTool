@@ -12,15 +12,27 @@ namespace PoseAnnotationTool
 {
     public partial class Form1 : Form
     {
-        class Joint {
+        class Joint
+        {
             public bool Use { get; set; }
             public PointF Position { get; set; }
+            public string ParentName { get; set; }
             public int ParentIndex { get; set; }
-            public Joint(float x, float y, int parent, bool use = true)
+            public string Name { get; set; }
+            public Joint(float x, float y, string name, string parentName, bool use = true)
             {
                 Position = new PointF(x, y);
-                ParentIndex = parent;
+                ParentName = parentName;
                 Use = use;
+                Name = name;
+            }
+
+            public Joint(float x, float y, int parentIndex, string name, bool use = true)
+            {
+                Position = new PointF(x, y);
+                ParentIndex = parentIndex;
+                Use = use;
+                Name = name;
             }
         }
 
@@ -30,10 +42,10 @@ namespace PoseAnnotationTool
         string ImagePath = "";
         Bitmap Img = null;
 
-        CheckBox[] checkboxes = new CheckBox[14];
-        Joint[] kps = new Joint[14];
-        Color[] jointColors= new Color[14];
-        Color[] boneColors = new Color[13];
+        CheckBox[] checkboxes = new CheckBox[17];
+        Joint[] kps = new Joint[17];
+        Color[] jointColors = new Color[17];
+        Color[] boneColors = new Color[17];
 
         public Form1()
         {
@@ -56,6 +68,9 @@ namespace PoseAnnotationTool
             checkboxes[11] = checkBox12;
             checkboxes[12] = checkBox13;
             checkboxes[13] = checkBox14;
+            checkboxes[14] = checkBox16;
+            checkboxes[15] = checkBox17;
+            checkboxes[16] = checkBox18;
 
             // edge color
             jointColors[0] = Color.FromArgb(255, 233, 163, 201);
@@ -71,7 +86,10 @@ namespace PoseAnnotationTool
             jointColors[10] = Color.FromArgb(255, 69, 117, 180);
             jointColors[11] = Color.FromArgb(255, 69, 117, 180);
             jointColors[12] = Color.FromArgb(255, 118, 42, 131);
-            jointColors[13] = Color.FromArgb(255, 118, 42, 131);
+            jointColors[13] = Color.FromArgb(255, 158, 100, 69);
+            jointColors[14] = Color.FromArgb(255, 158, 69, 100);
+            jointColors[15] = Color.FromArgb(255, 69, 158, 100);
+            jointColors[16] = Color.FromArgb(255, 255, 152, 0);
 
             boneColors[0] = Color.FromArgb(255, 233, 163, 201);
             boneColors[1] = Color.FromArgb(255, 233, 163, 201);
@@ -86,21 +104,87 @@ namespace PoseAnnotationTool
             boneColors[10] = Color.FromArgb(255, 69, 117, 180);
             boneColors[11] = Color.FromArgb(255, 69, 117, 180);
             boneColors[12] = Color.FromArgb(255, 118, 42, 131);
+            boneColors[13] = Color.FromArgb(255, 100, 30, 58);
+            boneColors[14] = Color.FromArgb(255, 30, 100, 58);
+            boneColors[15] = Color.FromArgb(255, 7, 197, 131);
+            boneColors[16] = Color.FromArgb(255, 125, 39, 128);
 
-            kps[0] = new Joint(110, 100, 1);
-            kps[1] = new Joint(120, 100, 2);
-            kps[2] = new Joint(130, 100, 8);
-            kps[3] = new Joint(140, 100, 9);
-            kps[4] = new Joint(150, 100, 3);
-            kps[5] = new Joint(160, 100, 4);
-            kps[6] = new Joint(170, 100, 7);
-            kps[7] = new Joint(180, 100, 8);
-            kps[8] = new Joint(190, 100, 12);
-            kps[9] = new Joint(200, 100, 12);
-            kps[10] = new Joint(300, 100, 9);
-            kps[11] = new Joint(400, 100, 10);
-            kps[12] = new Joint(500, 100, 13);
-            kps[13] = new Joint(600, 100, -1);
+            //kps[0] = new Joint(110, 100, 1);
+            //kps[1] = new Joint(120, 100, 2);
+            //kps[2] = new Joint(130, 100, 8);
+            //kps[3] = new Joint(140, 100, 9);
+            //kps[4] = new Joint(150, 100, 3);
+            //kps[5] = new Joint(160, 100, 4);
+            //kps[6] = new Joint(170, 100, 7);
+            //kps[7] = new Joint(180, 100, 8);
+            //kps[8] = new Joint(190, 100, 12);
+            //kps[9] = new Joint(200, 100, 12);
+            //kps[10] = new Joint(300, 100, 9);
+            //kps[11] = new Joint(400, 100, 10);
+            //kps[12] = new Joint(500, 100, 13);
+            //kps[13] = new Joint(600, 100, -1);
+            //kps[14] = new Joint(650, 100, 14);
+            //kps[15] = new Joint(680, 100, 15);
+            //kps[16] = new Joint(700, 100, 16);
+
+            //kps[0] = new Joint(110, 100, 6, "Nose");  // Nose
+            //kps[1] = new Joint(120, 100, 0, "Leye");  // L eye
+            //kps[2] = new Joint(130, 100, 0, "Reye");  // R eye
+            //kps[3] = new Joint(140, 100, 1, "Lear");  // L ear
+            //kps[4] = new Joint(150, 100, 2, "Rear");  // R ear
+            //kps[5] = new Joint(160, 100, 6, "Lshoulder");  // L shoulder
+            //kps[6] = new Joint(170, 100, 12, "Rshoulder");  // R shoulder
+            //kps[7] = new Joint(180, 100, 5, "Lelbow");  // L elbow
+            //kps[8] = new Joint(190, 100, 6, "Relbow"); // R elbow
+            //kps[9] = new Joint(200, 100, 7, "Lwrist"); // L wrist
+            //kps[10] = new Joint(300, 100, 8, "Rwrist"); // R wrist
+            //kps[11] = new Joint(400, 100, 5, "Lhip"); // L hip
+            //kps[12] = new Joint(500, 100, 11, "Rhip"); // R hip
+            //kps[13] = new Joint(600, 100, 11, "Lknee"); // L knee
+            //kps[14] = new Joint(650, 100, 12, "Rknee"); // R knee
+            //kps[15] = new Joint(680, 100, 13, "Lankle"); // L ankle
+            //kps[16] = new Joint(700, 100, 14, "Rankle"); // R ankle
+
+
+            kps[0] = new Joint(434, 300, "Nose", "Rshoulder");  // Nose
+            kps[1] = new Joint(484, 173, "Leye", "Nose");  // L eye
+            kps[2] = new Joint(366, 204, "Reye", "Nose");  // R eye
+            kps[3] = new Joint(578, 219, "Lear", "Leye");  // L ear
+            kps[4] = new Joint(269, 219, "Rear", "Reye");  // R ear
+            kps[5] = new Joint(627, 400, "Lshoulder", "Rshoulder");  // L shoulder
+            kps[6] = new Joint(302, 442, "Rshoulder", "Rhip");  // R shoulder
+            kps[7] = new Joint(748, 574, "Lelbow", "Lshoulder");  // L elbow
+            kps[8] = new Joint(162, 608, "Relbow", "Rshoulder"); // R elbow
+            kps[9] = new Joint(790, 888, "Lwrist", "Lelbow"); // L wrist
+            kps[10] = new Joint(150, 869, "Rwrist", "Relbow"); // R wrist
+            kps[11] = new Joint(635, 930, "Lhip", "Lshoulder"); // L hip
+            kps[12] = new Joint(344, 949, "Rhip", "Lhip"); // R hip
+            kps[13] = new Joint(654, 1183, "Lknee", "Lhip"); // L knee
+            kps[14] = new Joint(378, 1221, "Rknee", "Rhip"); // R knee
+            kps[15] = new Joint(669, 1482, "Lankle", "Lknee"); // L ankle
+            kps[16] = new Joint(381, 1425, "Rankle", "Rknee"); // R ankle
+
+            SetNames();
+
+            foreach (var kpt in kps)
+            {
+                kpt.ParentIndex = kps.ToList().IndexOf(kps.First(a => a.Name == kpt.ParentName));
+            }
+
+            var map =
+                kps.Select(a => new
+                {
+                    a.Name,
+                    ParentName = a.ParentIndex >= 0 ? kps[a.ParentIndex].Name : "End"
+                })
+                .ToList();
+
+            for (int i = 0; i < map.Count; i++)
+            {
+                var m = map[i];
+
+                checkboxes[i].Text = $"{m.Name} ({m.ParentName})";
+            }
 
             int annotCount = 0;
             datasets = new Datasets();
@@ -143,6 +227,46 @@ namespace PoseAnnotationTool
             }
 
             Console.WriteLine("# of Annotation = " + annotCount);
+        }
+
+        private void SetNames()
+        {
+            kps[0].Name = "Nose";
+            kps[1].Name = "Leye";
+            kps[2].Name = "Reye";
+            kps[3].Name = "Lear";
+            kps[4].Name = "Rear";
+            kps[5].Name = "Lshoulder";
+            kps[6].Name = "Rshoulder";
+            kps[7].Name = "Lelbow";
+            kps[8].Name = "Relbow";
+            kps[9].Name = "Lwrist";
+            kps[10].Name = "Rwrist";
+            kps[11].Name = "Lhip";
+            kps[12].Name = "Rhip";
+            kps[13].Name = "Lknee";
+            kps[14].Name = "Rknee";
+            kps[15].Name = "Lankle";
+            kps[16].Name = "Rankle";
+
+
+            kps[0].ParentName = "Rshoulder";
+            kps[1].ParentName = "Nose";
+            kps[2].ParentName = "Nose";
+            kps[3].ParentName = "Leye";
+            kps[4].ParentName = "Reye";
+            kps[5].ParentName = "Rshoulder";
+            kps[6].ParentName = "Rhip";
+            kps[7].ParentName = "Lshoulder";
+            kps[8].ParentName = "Rshoulder";
+            kps[9].ParentName = "Lelbow";
+            kps[10].ParentName = "Relbow";
+            kps[11].ParentName = "Lshoulder";
+            kps[12].ParentName = "Lhip";
+            kps[13].ParentName = "Lhip";
+            kps[14].ParentName = "Rhip";
+            kps[15].ParentName = "Lknee";
+            kps[16].ParentName = "Rknee";
         }
 
         private void checkBoxJoint_CheckedChanged(object sender, EventArgs e)
@@ -239,8 +363,9 @@ namespace PoseAnnotationTool
                 float x = float.Parse(tokens[1]);
                 float y = float.Parse(tokens[2]);
                 bool use = bool.Parse(tokens[3]);
-                kps[i] = new Joint(x, y, kps[i].ParentIndex, use);
+                kps[i] = new Joint(x, y, kps[i].ParentIndex, "unknown", use);
             }
+            SetNames();
         }
 
         float lastRatio_ = 1.0f;
@@ -363,7 +488,7 @@ namespace PoseAnnotationTool
             saveAnnotation(ImagePath);
             pictureBox1.Invalidate();
         }
-        
+
         private void saveToolStripMenuItem_Click(object sender, EventArgs e)
         {
 
@@ -374,8 +499,11 @@ namespace PoseAnnotationTool
 
         }
 
-        void swap(Joint kps1, Joint kps2)
+        void swap(string jointNameTemplate)
         {
+            var kps1 = kps.First(a => a.Name == "R" + jointNameTemplate);
+            var kps2 = kps.First(a => a.Name == "L" + jointNameTemplate);
+
             var t = kps1.Position;
             kps1.Position = kps2.Position;
             kps2.Position = t;
@@ -383,14 +511,17 @@ namespace PoseAnnotationTool
 
         private void flipButton_Click(object sender, EventArgs e)
         {
-            swap(kps[5], kps[0]);
-            swap(kps[4], kps[1]);
-            swap(kps[3], kps[2]);
-            swap(kps[11], kps[6]);
-            swap(kps[10], kps[7]);
-            swap(kps[9], kps[8]);
+            swap("eye");
+            swap("ear");
+            swap("shoulder");
+            swap("knee");
+            swap("elbow");
+            swap("wrist");
+            swap("ankle");
+            swap("hip");
             saveAnnotation(ImagePath);
             pictureBox1.Invalidate();
         }
     }
 }
+ 
