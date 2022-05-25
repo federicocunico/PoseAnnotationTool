@@ -55,3 +55,9 @@ e.g.
 If required:
 1. Replace "DefaultDataDir" in Datasets.cs with the root image folder path.
 2. Then, build and run (We confirmed it works in Visual Studio 2019)
+
+## Current limitations:
+- Multi-person support
+- No linux build (.NET Framework not supported in linux)
+- Correct ordering in case of images with non integer filenames
+- Several unhandled errors (e.g. in case of no image found)
