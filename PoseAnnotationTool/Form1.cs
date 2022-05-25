@@ -183,7 +183,8 @@ namespace PoseAnnotationTool
             {
                 var m = map[i];
 
-                checkboxes[i].Text = $"{m.Name} ({m.ParentName})";
+                //checkboxes[i].Text = $"{m.Name} ({m.ParentName})";
+                checkboxes[i].Text = $"{m.Name}";
             }
 
             int annotCount = 0;

@@ -17,14 +17,26 @@ namespace PoseAnnotationTool
         {
             string strExeFilePath = System.Reflection.Assembly.GetExecutingAssembly().Location;
             string strWorkPath = System.IO.Path.GetDirectoryName(strExeFilePath);
-            
+
             string DefaultDataDir = System.IO.Path.Combine(strWorkPath, "images");
+            System.IO.Directory.CreateDirectory(DefaultDataDir);
             DataDir = DefaultDataDir;
             dataDir = DefaultDataDir;
             FileList.AddRange(System.IO.Directory.GetFiles(dataDir, "*.png", System.IO.SearchOption.AllDirectories).ToList());
             FileList.AddRange(System.IO.Directory.GetFiles(dataDir, "*.jpg", System.IO.SearchOption.AllDirectories).ToList());
 
-            FileList.Sort();
+            //FileList.Sort();
+            FileList = FileList.OrderBy(a =>
+            {
+                var fileName = System.IO.Path.GetFileNameWithoutExtension(a);
+                var parsed = int.TryParse(fileName, out int intValue);
+                return parsed ? intValue : 999999;
+            }).ThenBy(a =>
+            {
+                var fileName = System.IO.Path.GetFileNameWithoutExtension(a);
+                var parsed = int.TryParse(fileName, out int intValue);
+                return parsed ? "0" : a;
+            }).ToList();
         }
     }
 }
