@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.Globalization;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -47,8 +49,10 @@ namespace PoseAnnotationTool
         Color[] jointColors = new Color[17];
         Color[] boneColors = new Color[17];
 
+        private static CultureInfo EnUs = new CultureInfo("en-US");
         public Form1()
         {
+            Thread.CurrentThread.CurrentCulture = EnUs;
             InitializeComponent();
         }
 
@@ -338,11 +342,15 @@ namespace PoseAnnotationTool
             foreach (var kp in kps)
             {
                 //text += "0," + kp.Position.X + "," + kp.Position.Y + "," + kp.Use + "\n";
-                text += kp.Position.X + "," + kp.Position.Y + "\n";
+                text += kp.Position.X.ToString(EnUs) + "," + kp.Position.Y.ToString(EnUs) + "\n";
             }
 
             // save file
             string target = System.IO.Path.ChangeExtension(imagePath, "txt");
+            if (target == "")
+            {
+                return;
+            }
             System.IO.File.WriteAllText(target, text);
         }
 
@@ -369,8 +377,8 @@ namespace PoseAnnotationTool
             for (int i = 0; i < kps.Length; i++)
             {
                 var tokens = lines[i + 1].Split(',');
-                float x = float.Parse(tokens[0]);
-                float y = float.Parse(tokens[1]);
+                float x = float.Parse(tokens[0], EnUs);
+                float y = float.Parse(tokens[1], EnUs);
                 kps[i] = new Joint(x, y, kps[i].ParentIndex, "unknown", true);
             }
             SetNames();
