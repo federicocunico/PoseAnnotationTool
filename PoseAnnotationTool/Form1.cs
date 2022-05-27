@@ -296,9 +296,10 @@ namespace PoseAnnotationTool
             }
         }
 
+        TreeNode lastSelected = null;
+
         private void treeView1_AfterSelect(object sender, TreeViewEventArgs e)
         {
-
             if (e.Node.Nodes.Count > 0)
             {
                 return;
@@ -320,7 +321,10 @@ namespace PoseAnnotationTool
             loadImage(path);
             loadAnnotation(path);
             pictureBox1.Invalidate();
+
+            lastSelected = e.Node;
         }
+
         void loadImage(string path)
         {
             if (Img != null)
@@ -434,11 +438,17 @@ namespace PoseAnnotationTool
                     {
                         if (kp == HoveringJoint)
                         {
-                            e.Graphics.DrawEllipse(new Pen(Color.Red, 2), x - 2 * r, y - 2 * r, 4 * r, 4 * r);
+                            //e.Graphics.DrawEllipse(new Pen(Color.Red, 2), x - 2 * r, y - 2 * r, 4 * r, 4 * r);
+                            e.Graphics.DrawEllipse(new Pen(jointColors[i], 2), x - 2 * r, y - 2 * r, 4 * r, 4 * r);
+                            //e.Graphics.DrawString(kp.Name, new Font("Arial", 16), new SolidBrush(Color.Black), x - 50, y - 50);
+                            e.Graphics.DrawString(kp.Name, new Font("Arial", 14), new SolidBrush(jointColors[i]), x + 20, y - 20);
                         }
                         if (kp == SelectingJoint)
                         {
-                            e.Graphics.DrawEllipse(new Pen(Color.Red, 2), x - 2 * r, y - 2 * r, 4 * r, 4 * r);
+                            //e.Graphics.DrawEllipse(new Pen(Color.Red, 2), x - 2 * r, y - 2 * r, 4 * r, 4 * r);
+                            e.Graphics.DrawEllipse(new Pen(jointColors[i], 2), x - 2 * r, y - 2 * r, 4 * r, 4 * r);
+                            //e.Graphics.DrawString(kp.Name, new Font("Arial", 16), new SolidBrush(Color.Black), x - 50, y - 50);
+                            e.Graphics.DrawString(kp.Name, new Font("Arial", 14), new SolidBrush(jointColors[i]), x + 20, y - 20);
                         }
                     }
                 }
@@ -515,6 +525,7 @@ namespace PoseAnnotationTool
 
         }
 
+
         void swap(string jointNameTemplate)
         {
             var kps1 = kps.First(a => a.Name == "R" + jointNameTemplate);
@@ -538,5 +549,6 @@ namespace PoseAnnotationTool
             saveAnnotation(ImagePath);
             pictureBox1.Invalidate();
         }
+
     }
 }
