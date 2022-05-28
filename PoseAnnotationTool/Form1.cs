@@ -49,6 +49,8 @@ namespace PoseAnnotationTool
         Color[] jointColors = new Color[17];
         Color[] boneColors = new Color[17];
 
+        Dictionary<Keys, Joint> keybinds = new Dictionary<Keys, Joint>();
+
         private static CultureInfo EnUs = new CultureInfo("en-US");
         public Form1()
         {
@@ -148,7 +150,6 @@ namespace PoseAnnotationTool
             //kps[14] = new Joint(650, 100, 12, "Rknee"); // R knee
             //kps[15] = new Joint(680, 100, 13, "Lankle"); // L ankle
             //kps[16] = new Joint(700, 100, 14, "Rankle"); // R ankle
-
 
             kps[0] = new Joint(434, 300, "Nose", "Rshoulder");  // Nose
             kps[1] = new Joint(484, 173, "Leye", "Nose");  // L eye
@@ -296,10 +297,39 @@ namespace PoseAnnotationTool
             }
         }
 
+        void setLastSelectedImage(TreeNode lastSelectedImage)
+        {
+            List<string> tokens = new List<string>();
+            tokens.Add(lastSelectedImage.Text);
+            var n = lastSelectedImage;
+            var labelText = "";
+            while (n.Parent != null)
+            {
+                n = n.Parent;
+                tokens.Add(n.Text);
+            }
+            // tokens.Add(datasets.DataDir);
+            tokens.Reverse();
+            for (int i = 0; i < tokens.Count; i++)
+            {
+                var lab = tokens[i];
+                labelText += lab;
+                if (i != tokens.Count - 1) {
+                    labelText += "/";
+                }
+            }
+
+            LastSelectedImageLabel.Text = labelText;
+            lastSelected = lastSelectedImage;
+        }
+
         TreeNode lastSelected = null;
 
         private void treeView1_AfterSelect(object sender, TreeViewEventArgs e)
         {
+            setLastSelectedImage(e.Node);
+
+
             if (e.Node.Nodes.Count > 0)
             {
                 return;
@@ -321,8 +351,6 @@ namespace PoseAnnotationTool
             loadImage(path);
             loadAnnotation(path);
             pictureBox1.Invalidate();
-
-            lastSelected = e.Node;
         }
 
         void loadImage(string path)
@@ -436,19 +464,34 @@ namespace PoseAnnotationTool
 
                     if (kp.Use)
                     {
-                        if (kp == HoveringJoint)
+                        var offsetX = 50;
+                        var offsetY = 50;
+                        var tooltipPosX = x + offsetX;
+                        var tooltipPosY = y - offsetY;
+
+                        var tooltipBgOffsetX = 5;
+                        var tooltipBgOffsetY = 5;
+                        var tooltipBgPosX = (int)(tooltipPosX - tooltipBgOffsetX);
+                        var tooltipBgPosY = (int)(tooltipPosY - tooltipBgOffsetY);
+
+                        var tooltipFont = new Font("Arial", 14);
+                        var tooltipColor = new SolidBrush(jointColors[i]);
+                        var tooltipText = kp.Name;
+
+                        SizeF stringSize = e.Graphics.MeasureString(tooltipText, tooltipFont);
+
+                        var tooltipBgWidth = (int)stringSize.Width + (tooltipBgOffsetX * 2);
+                        var tooltipBgHeight = (int)stringSize.Height + (tooltipBgOffsetY * 2);
+
+
+                        if (kp == HoveringJoint || kp == SelectingJoint)
                         {
                             //e.Graphics.DrawEllipse(new Pen(Color.Red, 2), x - 2 * r, y - 2 * r, 4 * r, 4 * r);
                             e.Graphics.DrawEllipse(new Pen(jointColors[i], 2), x - 2 * r, y - 2 * r, 4 * r, 4 * r);
-                            //e.Graphics.DrawString(kp.Name, new Font("Arial", 16), new SolidBrush(Color.Black), x - 50, y - 50);
-                            e.Graphics.DrawString(kp.Name, new Font("Arial", 14), new SolidBrush(jointColors[i]), x + 20, y - 20);
-                        }
-                        if (kp == SelectingJoint)
-                        {
-                            //e.Graphics.DrawEllipse(new Pen(Color.Red, 2), x - 2 * r, y - 2 * r, 4 * r, 4 * r);
-                            e.Graphics.DrawEllipse(new Pen(jointColors[i], 2), x - 2 * r, y - 2 * r, 4 * r, 4 * r);
-                            //e.Graphics.DrawString(kp.Name, new Font("Arial", 16), new SolidBrush(Color.Black), x - 50, y - 50);
-                            e.Graphics.DrawString(kp.Name, new Font("Arial", 14), new SolidBrush(jointColors[i]), x + 20, y - 20);
+
+                            // Tooltip
+                            e.Graphics.FillRectangle(new SolidBrush(Color.FromArgb(200, 125, 125, 125)), new Rectangle(tooltipBgPosX, tooltipBgPosY, tooltipBgWidth, tooltipBgHeight));
+                            e.Graphics.DrawString(kp.Name, new Font("Arial", 14), new SolidBrush(jointColors[i]), tooltipPosX, tooltipPosY);
                         }
                     }
                 }
@@ -504,15 +547,25 @@ namespace PoseAnnotationTool
 
         private void pictureBox1_MouseDown(object sender, MouseEventArgs e)
         {
-            SelectingJoint = findJointFromPosition(e.Location);
+            SelectJoint(findJointFromPosition(e.Location));
+        }
+
+        private void SelectJoint(Joint joint)
+        {
+            SelectingJoint = joint;
+            pictureBox1.Invalidate();
+        }
+
+        private void SetSelectingJoint()
+        {
+            SelectingJoint = null;
+            saveAnnotation(ImagePath);
             pictureBox1.Invalidate();
         }
 
         private void pictureBox1_MouseUp(object sender, MouseEventArgs e)
         {
-            SelectingJoint = null;
-            saveAnnotation(ImagePath);
-            pictureBox1.Invalidate();
+            SetSelectingJoint();
         }
 
         private void saveToolStripMenuItem_Click(object sender, EventArgs e)
@@ -525,6 +578,72 @@ namespace PoseAnnotationTool
 
         }
 
+
+        private void OnKeyDownEvent(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Space)
+            {
+                SelectNextImage(lastSelected, true);
+            }
+
+            ManageJointKeyDown("Nose", Keys.N);
+            ManageJointKeyDown("Lear", Keys.E);
+
+
+            void ManageJointKeyDown(string jointName, Keys key)
+            {
+                if (e.KeyCode == key)
+                {
+                    if (SelectingJoint == null)
+                    {
+                        SelectJoint(kps.First(a => a.Name == jointName));
+                    }
+                    else
+                    {
+                        SetSelectingJoint();
+                    }
+                }
+            }
+
+        }
+
+
+
+        void SelectNextImage(TreeNode currenItem, bool allowSelectChild)
+        {
+            if (currenItem == null) return;
+
+            if (allowSelectChild && currenItem.Nodes.Count > 0)
+            {
+                SelectNode(currenItem.Nodes[0]);
+                return;
+            }
+
+            var parentCollection = currenItem?.Parent?.Nodes ?? treeView1.Nodes;
+            var currentIndex = currenItem.Index;
+            var nextSiblingIndex = currentIndex + 1;
+            var thereIsNextSibling = nextSiblingIndex < parentCollection.Count;
+            if (thereIsNextSibling)
+            {
+                var nextSibling = parentCollection[nextSiblingIndex];
+                SelectNode(nextSibling);
+            }
+            else
+            {
+                if (currenItem.Parent == null)
+                {
+                    SelectNode(parentCollection[0]);
+                    return;
+                }
+
+                SelectNextImage(currenItem.Parent, false);
+            }
+
+            void SelectNode(TreeNode node)
+            {
+                treeView1.SelectedNode = node;
+            }
+        }
 
         void swap(string jointNameTemplate)
         {
@@ -549,6 +668,5 @@ namespace PoseAnnotationTool
             saveAnnotation(ImagePath);
             pictureBox1.Invalidate();
         }
-
     }
 }
