@@ -7,7 +7,8 @@ A simple 2D keypoint annotation tool. Currently it supports 17 keypoints (COCO f
 ## How to run
 
 1. Build the project. 
-2. Place in the `.exe`  file directory a folder named "images". Example:s
+2. Place in the `.exe`  file directory a folder named "images". Example:
+3. On windows, just run the `.exe`. In linux, you can use [MONO](https://www.mono-project.com/).
 
 ```
 PoseAnnotationTool.exe
